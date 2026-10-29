@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animefy 2API Demo</title>
+<style>
+  :root{--bg:#0e1116;--panel:#171c24;--line:#262e3a;--fg:#e6edf3;--dim:#93a1b1;--accent:#ff6b9d;--ok:#3fb950;--err:#f85149}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.6 -apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+  header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  h1{font-size:16px;margin:0;font-weight:600}
+  .tag{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+  main{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px 24px;align-items:start}
+  @media(max-width:860px){main{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  label{display:block;font-size:12px;color:var(--dim);margin:12px 0 6px}
+  input,select,button{font:inherit;width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0f141b;color:var(--fg)}
+  button{cursor:pointer;background:var(--accent);border-color:var(--accent);color:#12030a;font-weight:600;margin-top:16px}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--dim);margin-top:10px}
+  .imgs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .imgs figure{margin:0;background:#0f141b;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:220px;display:flex;flex-direction:column;gap:8px}
+  .imgs img{width:100%;height:auto;border-radius:6px;display:block;background:#000}
+  figcaption{font-size:12px;color:var(--dim)}
+  pre{margin:12px 0 0;background:#0b0f14;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;color:#b9c6d4;overflow:auto;max-height:240px}
+  .ok{color:var(--ok)}.err{color:var(--err)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Animefy 2API Demo</h1>
+  <span class="tag" id="mode">mode: ?</span>
+  <span class="tag" id="stat">req 0 / ok 0 / fail 0</span>
+</header>
+<main>
+  <section class="panel">
+    <label for="file">输入图片</label>
+    <input type="file" id="file" accept="image/*" />
+    <label for="model">模型</label>
+    <select id="model"></select>
+    <label for="size">尺寸</label>
+    <select id="size">
+      <option value="1024x1024">1024×1024</option>
+      <option value="768x1376">768×1376（竖版）</option>
+      <option value="768x1024">768×1024</option>
+      <option value="512x512">512×512</option>
+    </select>
+    <button id="go">生成</button>
+    <div class="row" id="hint">选择图片后点生成；链路 = 上传 → 建任务 → 轮询 → 取图</div>
+  </section>
+
+  <section class="panel">
+    <div class="imgs">
+      <figure>
+        <figcaption>输入</figcaption>
+        <img id="in" alt="input" />
+      </figure>
+      <figure>
+        <figcaption>输出 <span id="cost"></span></figcaption>
+        <img id="out" alt="output" />
+      </figure>
+    </div>
+    <pre id="log">ready.</pre>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const log = (msg, cls) => {
+  const el = $("log");
+  el.innerHTML += `\n<span class="${cls || ""}">${new Date().toLocaleTimeString()} ${msg}</span>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+async function boot() {
+  try {
+    const h = await (await fetch("/healthz")).json();
+    $("mode").textContent = "mode: " + h.mode;
+    $("stat").textContent = `req ${h.requests} / ok ${h.ok} / fail ${h.failed}`;
+    const m = await (await fetch("/v1/models")).json();
+    $("model").innerHTML = m.data.map(d =>
+      `<option value="${d.id}">${d.id} — ${d.description || d.effectType}</option>`).join("");
+    log("已连接网关，模型 " + m.data.map(d => d.id).join(", "));
+  } catch (e) { log("网关不可用: " + e, "err"); }
+}
+
+let currentFile = null;
+$("file").onchange = (e) => {
+  currentFile = e.target.files[0] || null;
+  if (currentFile) {
+    $("in").src = URL.createObjectURL(currentFile);
+    log("已选择 " + currentFile.name + " (" + currentFile.size + " B)");
+  }
+};
+
+$("go").onclick = async () => {
+  if (!currentFile) { log("请先选择图片", "err"); return; }
+  const fd = new FormData();
+  fd.append("file", currentFile);
+  fd.append("model", $("model").value);
+  fd.append("size", $("size").value);
+  fd.append("response_format", "url");
+  $("go").disabled = true;
+  $("cost").textContent = "";
+  const t0 = performance.now();
+  try {
+    log("POST /v1/images/edits  model=" + $("model").value + " size=" + $("size").value);
+    const r = await fetch("/v1/images/edits", { method: "POST", body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || ("http " + r.status));
+    $("out").src = j.data[0].url + "?t=" + Date.now();
+    const secs = ((performance.now() - t0) / 1000).toFixed(2);
+    $("cost").textContent = secs + "s";
+    log(`OK jobId=${j.animefy.jobId} mode=${j.animefy.mode} elapsed=${j.animefy.elapsed}s`, "ok");
+  } catch (e) {
+    log("失败: " + e.message, "err");
+  } finally {
+    $("go").disabled = false;
+    boot();
+  }
+};
+
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+fastapi>=0.110
+uvicorn>=0.29
+requests>=2.31
+pillow>=10.0
+# 可选：浏览器 E2E
+playwright>=1.40
+# 可选：单测
+pytest>=8.0

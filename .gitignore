@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+static/out/
+fixtures/
+benchmark_*.json
+server_*.log
+browser_demo_*.png
+.env

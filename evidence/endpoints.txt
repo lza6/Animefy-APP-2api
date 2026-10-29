@@ -1,0 +1,118 @@
+# Animefy 端点全表（来源：jadx 全量反编译后扫描 Retrofit 注解 @o/@f/@q/@r/@s/@u）
+# 主服务 base: https://sci.videomate.cc      AI 云算法 base: 同上 + /algo/v1/faceFusion/**
+
+## 主服务 / 通用
+GET  /common/{appName}/resource                 匿名可读，实测 200 / 473KB（appName=vibe）
+GET  /common/{appName}/resourceNew
+GET  /common/{appName}/getStyleTemplates        实测返回 styleGroupList=null
+GET  /common/category/{appName}/resource
+GET  /common/country/getCountryCode
+GET  /storyart/ncrnau/beat/getResourceList      实测 rt=4 出 32 条，rt=7/12 有数据
+GET  /v1/config
+GET  /v1/stories/app/view                       实测 404（服务已下线）
+POST /billing/pre/general
+POST /billing/property/userReport
+POST /billing/property/exchangeCode
+POST /billing/link/installCall
+POST /new/billing/inAppBillingVerify/android/report
+POST /new/billing/property/{complete,getUpgradeInfo,issuePrivilegeV2,purchaseFailReport,restore,userReport}
+
+## 上传
+POST /algo/v1/aiGenerate-aigc/multipleUpload    【已验证】multipart 字段名 files
+POST /algo/v1/{engineName}/multipleUpload       （泛化模板，engineName 即上面的 aiGenerate-aigc）
+POST /file/style/upload
+POST /file/style/multipleUpload
+POST /algo/v1/pic/segment
+
+## 图像 / 风格（本轮主用）
+POST /algo/v1/faceFusion/createAiStyleTask      【已验证】建任务（effectType）
+POST /algo/v1/faceFusion/queryAiStyleTask       【已验证】轮询
+POST /algo/v1/faceFusion/cancelAiStyleTask
+POST /algo/v1/faceFusion/aigc/image2image/createAiStyleTask   需 token 非空
+POST /algo/v1/faceFusion/aigc/image2image/createImageTask     缺参报 NumberFormatException
+POST /algo/v1/faceFusion/aigc/createInpaintAnything
+POST /algo/v1/faceFusion/aigc/createInpaintCleaner
+POST /algo/v1/faceFusion/aigc/createSwapFace
+POST /algo/v1/faceFusion/aigc/getFaceInfo
+POST /algo/v1/faceFusion/aigc/createPictureDetectTask
+POST /algo/v1/faceFusion/aigc/queryPictureDetectTask
+POST /algo/v1/faceFusion/aigc/createFaceKeyTask
+POST /algo/v1/faceFusion/aigc/createFaceKeyTaskV2
+POST /algo/v1/faceFusion/aigc/queryFaceKeyTask
+POST /algo/v1/faceFusion/aigc/queryFaceKeyTaskV2
+POST /algo/v1/faceFusion/aigc/createAiPhotoModel
+POST /algo/v1/faceFusion/aigc/createAiPhotoModelV2
+POST /algo/v1/faceFusion/aigc/queryAiPhotoModels
+POST /algo/v1/faceFusion/aigc/createAiPhotoTask
+POST /algo/v1/faceFusion/aigc/createAiPhotoTaskV2
+POST /algo/v1/faceFusion/aigc/queryAiPhotoTask
+POST /algo/v1/faceFusion/aigc/createAiCustomizeTask
+POST /algo/v1/faceFusion/aigc/queryAiCustomizeTask
+POST /algo/v1/faceFusion/aigc/cancelAiCustomizeTask
+POST /algo/v1/faceFusion/aigc/babyPredictCreate
+POST /algo/v1/faceFusion/aigc/babyPredictCreateV2
+POST /algo/v1/faceFusion/aigc/babyPredictQuery
+POST /algo/v1/faceFusion/aigc/babyPredictQueryV2
+POST /algo/v1/faceFusion/aigc/stitchImage/createTask
+POST /algo/v1/faceFusion/aigc/stitchImage/queryTask
+POST /algo/v1/faceFusion/aigc/getAllPoseSequenceId
+
+## 视频
+POST /algo/v1/faceFusion/aigc/image2video/createTask
+POST /algo/v1/faceFusion/aigc/image2video/queryTask
+POST /algo/v1/faceFusion/aigc/image2video/unifiedTaskCreate
+POST /algo/v1/faceFusion/aigc/image2video/integratedTaskCreate
+POST /algo/v1/faceFusion/aigc/image2video/image2VideoCreateV5
+POST /algo/v1/faceFusion/aigc/image2VideoCreate
+POST /algo/v1/faceFusion/aigc/image2VideoCreateV2
+POST /algo/v1/faceFusion/aigc/image2VideoCreateV3
+POST /algo/v1/faceFusion/aigc/image2VideoQuery
+POST /algo/v1/faceFusion/aigc/image2VideoCancel
+POST /algo/v1/faceFusion/aigc/image2VideoDetect
+POST /algo/v1/faceFusion/aigc/integrated/image2VideoCreateV4
+POST /algo/v1/faceFusion/aigc/beatImage2Video/createNormalTask
+POST /algo/v1/faceFusion/aigc/beatImage2Video/queryTask
+POST /algo/v1/faceFusion/aigc/beatImage2Video/cancelTask
+POST /algo/v1/faceFusion/aigc/text2Video/createTask
+POST /algo/v1/faceFusion/aigc/text2Video/queryTask
+POST /algo/v1/faceFusion/aigc/text2Video/cancelTask
+POST /algo/v1/faceFusion/aigc/text2video/unifiedTaskCreate
+POST /algo/v1/faceFusion/aigc/createVideoHdTask
+POST /algo/v1/faceFusion/aigc/createVideoHdTaskVidu
+POST /algo/v1/faceFusion/aigc/queryVideoHdTask
+POST /algo/v1/faceFusion/aigc/cancelVideoHdTask
+POST /algo/v1/faceFusion/aigc/createSuperResolutionNew
+POST /algo/v1/faceFusion/aigc/querySuperResolutionNew
+POST /algo/v1/faceFusion/aigc/image2VideoCustomer/createTemplate
+POST /algo/v1/faceFusion/aigc/image2VideoCustomer/queryTemplate
+POST /algo/v1/faceFusion/aigc/image2VideoCustomer/cancelTemplate
+POST /algo/v1/faceFusion/aigc/image2VideoCustomer/upload
+
+## 人脸动画 / 驱动
+POST /algo/v1/faceAnimation/createFaceAnimationTask
+POST /algo/v1/faceAnimation/queryFaceAnimationTask
+POST /algo/v1/faceAnimation/redoFaceAnimationTask
+POST /algo/v1/faceAnimation/cancelFaceAnimationTask
+POST /algo/v1/faceAnimation/multipleUpload
+POST /style/v1/face/faceSwap
+POST /style/v1/videoFaceFusion
+POST /style/v1/queryVideoFaceFusion
+POST /style/v1/redoVideoFaceFusion
+POST /style/v1/cancelFaceFusion
+POST /style/v1/videoFaceDriven
+POST /style/v1/queryVideoFaceDriven
+POST /style/v1/cancelFaceDriven
+POST /algo/v1/faceFusion/aigc/livePortraitCreate
+POST /algo/v1/faceFusion/aigc/livePortraitQuery
+POST /algo/v1/faceFusion/aigc/emoVideoCreate
+POST /algo/v1/faceFusion/aigc/emoVideoQuery
+POST /algo/v1/faceFusion/aigc/emoVideoCancel
+POST /algo/v1/faceFusion/aigc/emoImageDetect
+
+## 广告位（与业务无关，仅备查）
+POST /adSlot/common/autoIAAV2
+POST /adSlot/listAdModelConfigV2
+POST /adSlot/listAdModelConfigNewV2
+POST /adSlot/listAdSceneConfig
+GET  /adconfig/{cp}_{platform}/{country}.json
+GET  /v1/sdk/metrics/{business,operational,skate}
